@@ -1,0 +1,80 @@
+<html>
+    <head>
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+        <style type="text/css">
+            #url{  width: 100%;
+                  font-size: 1.5em;
+                  padding: 0.2em
+            }
+            #preview{margin-top: 1em;
+  border: 1px solid black;}
+            .inline{
+                display: inline-block;
+            }
+            #tumb{
+              width: 100%;
+              vertical-align: middle;
+            }
+      /*      *{
+                border: 0;padding: 0;margin: 0;
+            }*/
+        </style>
+    </head>
+    <body>
+        <input id="url" type="text"/>
+        <!-- <div id="div"> -->
+            <div id="preview">
+                <div class="inline" style="width:29%">
+                    <img id="tumb"/>
+                </div>
+                <div class="inline" style="  width: 68%;padding: 0 1%;vertical-align: top;">
+                    <p id="title" style="  font-size: 1.5em;font-weight: bold;"></p>
+                    <p id="description"></p>
+                    <a id="url_default"></a>
+                    <input id="id_video" type="hidden"/>
+                    <button id="download">Vos dale</button>
+                </div>
+            </div>
+        <!-- </div> -->
+        <script type="text/javascript">
+            function isYoutubeUrl(url){
+                var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                var match = url.match(regExp);
+                console.log(match)
+                if (match && match[2].length == 11) {
+                  return match[2];
+                } else return null;
+            }
+            $("#url").keyup(function(){
+                var id = isYoutubeUrl($(this).val());
+                if(id!=null){
+                    $.ajax({
+                        url: "http://gdata.youtube.com/feeds/api/videos/"+id+"?v=2&alt=jsonc",
+                        success: function(data,o,d){
+                            console.log(data);
+                            console.log(data.data.title);
+                            $("#title").html(data.data.title);
+                            console.log(data.data.description);
+                            $("#description").html(data.data.description);
+                            console.log(data.data.thumbnail.hqDefault)
+                            $("#tumb")[0].src=(data.data.thumbnail.hqDefault);
+                            $("#url_default")[0].href=(data.data.player.default);
+                            $("#url_default").html(data.data.player.default);
+                            $("#id_video").val(id)
+                            ///////////////////////
+
+                            //  $("#div").html(JSON.stringify(data));
+                        }
+                    });
+                }
+            });
+            $("#download").click(function(){
+                $.ajax({
+                    url: location.href,
+                    data : {id_video: $("#id_video").val(), action:"download",url: $("#url_default")[0].href}
+                })                
+            });
+            $("#url").val("https://www.youtube.com/watch?v=AGLspyuLlcA&index=1&list=PL_H9ND7QNO5ECZdTVpcMMI0jwykILyWyl").focus()
+        </script>
+    </body>
+</html>
